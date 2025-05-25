@@ -7,14 +7,13 @@
                 placeholder="Search products..."
                 class="w-50 p-2 border rounded"
             />
-            <select v-model="sortOrder" 
-                class="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-                <option value="">No sorting</option>
-                <option value="price-asc">Price: Low to High</option>
-                <option value="price-desc">Price: High to Low</option>
-                <option value="name-asc">Name: A to Z</option>
-                <option value="name-desc">Name: Z to A</option>
+            <select v-model="category" class="w-50 p-2 border rounded">
+                <option value="">All</option>
+                <option v-for="cat in categories" :key="cat" :value="cat">
+                    {{ cat }}
+                </option>
             </select>
+
         </div>
 
         <div v-if="error">
@@ -60,18 +59,24 @@ definePageMeta({
     layout:'default'
 })
 const {data: products, error }= await useFetch('https://fakestoreapi.com/products/')
-
+const {data: categories }= await useFetch('https://fakestoreapi.com/products/categories')
 
 // products have id, title, description, image, and price 
 
 const searchquery = ref('')
+const category = ref('')
+
 const filteredproducts=computed(()=>{
     let result = [...products.value]  // list of all products 
     if (searchquery.value){
         const query = searchquery.value.toLowerCase()
         result = result.filter(product => 
-            product.title.toLowerCase().includes(query)) ||
-            product.description.toLowerCase().includes(query)
+            product.title.toLowerCase().includes(query) ||
+            product.description.toLowerCase().includes(query))
+    }
+
+    if (category.value) {
+        result = result.filter(product => product.category === category.value)
     }
     return result
 })
